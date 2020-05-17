@@ -1,26 +1,63 @@
 import React from 'react';
-import logo from './logo.svg';
+import { Editor, EditorState, convertToRaw } from 'draft-js';
 import './App.css';
+import { parseRules } from './rules-parser/Parser';
+import { debounce } from './helpers/UiHelper';
+import { updateRules } from './services/RulesService';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { editorState: EditorState.createEmpty() };
+    this.setEditor = (editor) => {
+      this.editor = editor;
+    };
+    this.focusEditor = () => {
+      if (this.editor) {
+        this.editor.focus();
+      }
+    };
+    this.onChange = this.onChange.bind(this);
+  }
+
+  componentDidMount() {
+    this.focusEditor();
+  }
+
+  onChange(editorState) {
+    const contentState = editorState.getCurrentContent();
+    let rules = convertToRaw(contentState).blocks.map(({ text }) => text);
+    let parsedRules = parseRules(rules);
+    if (JSON.stringify(parsedRules) !== JSON.stringify(this.state.rules)) {
+      updateRules(parsedRules)
+    }
+    this.setState({
+      editorState,
+      rules: parsedRules
+    });
+  }
+
+  render() {
+    return (
+      <div
+        className="app">
+        <header
+          className="app-header">
+          Rules Editor
+        </header>
+        <div
+          className="app-body editor-container"
+          onClick={this.focusEditor}>
+          <Editor
+            ref={this.setEditor}
+            editorState={this.state.editorState}
+            onChange={debounce(500, this.onChange)}
+          />
+        </div>
+      </div>
+    );
+  }
 }
+
 
 export default App;
