@@ -1,10 +1,9 @@
 .app {
-  margin: 30px;
+  margin: 10px;
 }
 
 .app-header,
 .app-body {
-  
   width: 70vw;
   margin: auto;
   padding: 20px;
@@ -15,9 +14,12 @@
   font-weight: 500;
 }
 
-.app-body {
+.editor-container {
   box-sizing: border-box;
-  min-height: 50vh;
+  height: 70vh;
   border: 1px solid gray;
+  margin-bottom: 20px;
+  padding: 20px;
+  overflow-y: auto;
 }
 

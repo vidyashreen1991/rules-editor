@@ -1,5 +1,5 @@
 import React from 'react';
-import { Editor, EditorState, convertToRaw } from 'draft-js';
+import { Editor, EditorState, convertToRaw, removeEditorStyles } from 'draft-js';
 import './App.css';
 import { parseRules } from './rules-parser/Parser';
 import { debounce } from './helpers/UiHelper';
@@ -17,24 +17,26 @@ class App extends React.Component {
         this.editor.focus();
       }
     };
-    this.onChange = this.onChange.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   componentDidMount() {
     this.focusEditor();
   }
 
-  onChange(editorState) {
+  handleChange(editorState) {
     const contentState = editorState.getCurrentContent();
     let rules = convertToRaw(contentState).blocks.map(({ text }) => text);
     let parsedRules = parseRules(rules);
-    if (JSON.stringify(parsedRules) !== JSON.stringify(this.state.rules)) {
-      updateRules(parsedRules)
-    }
     this.setState({
       editorState,
       rules: parsedRules
     });
+  }
+
+  handleClick() {
+    updateRules(this.state.rules);
   }
 
   render() {
@@ -45,14 +47,18 @@ class App extends React.Component {
           className="app-header">
           Rules Editor
         </header>
-        <div
-          className="app-body editor-container"
-          onClick={this.focusEditor}>
-          <Editor
-            ref={this.setEditor}
-            editorState={this.state.editorState}
-            onChange={debounce(500, this.onChange)}
-          />
+        <div className="app-body">
+          <div
+            className="editor-container"
+            onClick={this.focusEditor}>
+            <Editor
+              ref={this.setEditor}
+              editorState={this.state.editorState}
+              onChange={debounce(500, this.handleChange)}
+            ></Editor>
+          </div>
+          <button
+            onClick={this.handleClick}>SAVE</button>
         </div>
       </div>
     );
